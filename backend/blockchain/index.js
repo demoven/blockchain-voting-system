@@ -1,6 +1,5 @@
-const Blockchain = require("./Blockchain");
+const Blockchain = require(".");
 const express = require("express");
-const bodyParser = require("body-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { connectDB } = require("./db");
@@ -9,7 +8,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT ||3000;
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(cors());
 
 const votingBlockchain = new Blockchain();
