@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+# -------------------------
+# NODE 1
+# -------------------------
+
+  node1:
+    build: .
+    container_name: node1
+    environment:
+      - MONGO_URL=mongodb://mongodb-node1:27017/blockchain
+      - PORT=3001
+      - PEERS=http://node2:3002,http://node3:3003
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb-node1
+    
+  mongodb-node1:
+    image: mongo:7
+    container_name: mongodb-node1
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo1-data:/data/db
+
+# -------------------------
+# NODE 2
+# -------------------------
+
+  node2:
+    build: .
+    container_name: node2
+    environment:
+      - MONGO_URL=mongodb://mongodb-node2:27017/blockchain
+      - PORT=3002
+      - PEERS=http://node1:3001,http://node3:3003
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongodb-node2
+    
+  mongodb-node2:
+    image: mongo:7
+    container_name: mongodb-node2
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo2-data:/data/db
+
+# -------------------------
+# NODE 3
+# -------------------------
+
+  node3:
+    build: .
+    container_name: node3
+    environment:
+      - MONGO_URL=mongodb://mongodb-node3:27017/blockchain
+      - PORT=3003
+      - PEERS=http://node1:3001,http://node2:3002
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongodb-node3
+    
+  mongodb-node3:
+    image: mongo:7
+    container_name: mongodb-node3
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo3-data:/data/db
+
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
