@@ -25,9 +25,8 @@ class Blockchain {
         const blocks = await loadBlockchainFromDB();
 
         if (blocks.length === 0) {
-            console.log("📌 Aucun bloc trouvé → création du genesis block");
-            const genesis = this.createGenesisBlock();
-            this.chain = [genesis];
+            console.log("📌 Aucun bloc trouvé. La blockchain est vide.");
+            this.chain = [];
         } else {
             console.log("📥 Blockchain chargée depuis MongoDB !");
             this.chain = blocks.map(b => ({
@@ -41,27 +40,39 @@ class Blockchain {
         }
     }
 
-    createGenesisBlock() {
-        return new Block(0, Date.now(), "Genesis Block", "0");
-    }
-
     getLatestBlock() {
         return this.chain[this.chain.length - 1];
     }
 
+    // Nouvelle méthode pour vérifier si un utilisateur a déjà voté pour un vote spécifique
+    hasUserVoted(voteId, hashedVoterId) {
+        // 1. Vérifier dans les transactions en attente
+        const inPending = this.pendingTransactions.some(
+            tx => tx.voteId === voteId && tx.hashedVoterId === hashedVoterId
+        );
+        if (inPending) return true;
+
+        return false;
+    }
+
+    // Nouvelle méthode pour récupérer les infos d'un vote (sujet, options)
+    getVoteStartTransaction(voteId) {
+        // Chercher dans les transactions en attente
+        let startTx = this.pendingTransactions.find(tx => tx.type === "startVote" && tx.voteId === voteId);
+        return startTx;
+    }
+
     addTransaction(transaction) {
-        if (transaction.voterId) {
+        if (transaction.voterId && transaction.voteId) {
 
             // Hasher l'identité pour l'anonymiser
             const hashedId = this.hashVoterId(transaction.voterId);
 
-            // Vérifier si ce hashedId a déjà voté dans pendingTransactions
-            const alreadyVoted = this.pendingTransactions.some(
-                tx => tx.hashedVoterId === hashedId
-            );
+            // Les votes ont différent id, vérifier si l'utilisateur a déjà voté pour un vote unique*
+            const alreadyVoted = this.hasUserVoted(transaction.voteId, hashedId);
 
             if (alreadyVoted) {
-                throw new Error("Cet utilisateur a déjà voté.");
+                throw new Error("Cet utilisateur a déjà voté pour ce scrutin.");
             }
 
             // Remplacer l'id par le hash
@@ -76,12 +87,21 @@ class Blockchain {
         return SHA256(voterId + SECRET_SALT).toString();
     }
 
-    async minePendingTransactions() {
+    async minePendingTransactions(voteId) {
+        // Filtrer les transactions pour ce vote spécifique
+        const transactionsToMine = this.pendingTransactions.filter(tx => tx.voteId === voteId);
+
+        if (transactionsToMine.length === 0) {
+            console.log("Aucune transaction à miner pour ce vote.");
+            return;
+        }
+
+        const previousHash = this.chain.length > 0 ? this.getLatestBlock().hash : "0";
         const newBlock = new Block(
             this.chain.length,
             Date.now(),
-            this.pendingTransactions,
-            this.getLatestBlock().hash
+            transactionsToMine,
+            previousHash
         );
 
         newBlock.mineBlock(this.difficulty);
@@ -97,7 +117,49 @@ class Blockchain {
             nonce: newBlock.nonce
         });
 
-        this.pendingTransactions = [];
+        // Retirer uniquement les transactions minées de la liste d'attente
+        this.pendingTransactions = this.pendingTransactions.filter(tx => tx.voteId !== voteId);
+        
+        return newBlock;
+    }
+
+    async addBlock(newBlock) {
+        const latestBlock = this.getLatestBlock();
+        
+        if (this.chain.length > 0) {
+            // Validation simple du bloc
+            if (newBlock.previousHash !== latestBlock.hash) {
+                console.log("❌ Bloc rejeté : Hash précédent invalide");
+                return false;
+            }
+            
+            if (newBlock.index !== latestBlock.index + 1) {
+                console.log("❌ Bloc rejeté : Index invalide");
+                return false;
+            }
+        } else {
+            if (newBlock.index !== 0) {
+                console.log("❌ Bloc rejeté : Index invalide (attendu 0)");
+                return false;
+            }
+        }
+
+        // On pourrait ajouter une validation du hash ici
+
+        this.chain.push(newBlock);
+        
+        // Sauvegarder dans la DB
+        await saveBlockToDB(newBlock);
+        
+        // Retirer les transactions du bloc de nos transactions en attente
+        // On suppose que newBlock.data contient les transactions
+        if (Array.isArray(newBlock.data)) {
+            const txIds = new Set(newBlock.data.map(tx => JSON.stringify(tx))); // Identification simple
+            this.pendingTransactions = this.pendingTransactions.filter(tx => !txIds.has(JSON.stringify(tx)));
+        }
+
+        console.log("✅ Nouveau bloc ajouté depuis un pair !");
+        return true;
     }
 
     isChainValid() {
