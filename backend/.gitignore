@@ -1,3 +1,6 @@
 node_modules/
 .env
 
+# Config files 
+appInit.json
+serviceAccount.json

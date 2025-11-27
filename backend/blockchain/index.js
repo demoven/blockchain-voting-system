@@ -5,11 +5,13 @@ const dotenv = require("dotenv");
 const { connectDB } = require("./db");
 const crypto = require("crypto");
 const axios = require("axios");
+const verifyToken = require("./verifyToken");
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+const authServiceUrl = process.env.AUTH_SERVICE_URL || "http://localhost:3005";
 app.use(express.json());
 app.use(cors());
 
@@ -68,8 +70,12 @@ app.post("/block/broadcast", async (req, res) => {
     }
 });
 
-app.post("/startVote", (req, res) => {
-    const { subject, options } = req.body;
+app.post("/startVote", verifyToken, (req, res) => {
+    const { subject, options, votersUid } = req.body;
+    const isAdmin = req.user.isAdmin;
+    if (!isAdmin) {
+        return res.status(403).send({ error: "Accès refusé : réservé aux administrateurs" });
+    }
     try {
         const voteId = crypto.randomUUID();
         
@@ -77,6 +83,7 @@ app.post("/startVote", (req, res) => {
             voteId: voteId,
             subject: subject, 
             options: options, 
+            votersUid: votersUid,
             type: "startVote", 
             startTime: Date.now() 
         };
@@ -90,11 +97,11 @@ app.post("/startVote", (req, res) => {
     }
 });
 
-app.post("/vote", (req, res) => {
-    const { voteId, voterId, choice } = req.body;
+app.post("/vote", verifyToken, (req, res) => {
+    const { voteId, choice } = req.body;
+    const voterId = req.user.uid;
     try {
         if (!voteId) throw new Error("voteId est requis.");
-
         const startTx = votingBlockchain.getVoteStartTransaction(voteId);
 
         if (!startTx) {
@@ -116,8 +123,12 @@ app.post("/vote", (req, res) => {
     }
 });
 
-app.post("/endVote", async (req, res) => {
+app.post("/endVote", verifyToken, async (req, res) => {
     const { voteId } = req.body;
+    const isAdmin = req.user.isAdmin;
+    if (!isAdmin) {
+        return res.status(403).send({ error: "Accès refusé : réservé aux administrateurs" });
+    }
     try {
         if (!voteId) throw new Error("voteId est requis.");
 
