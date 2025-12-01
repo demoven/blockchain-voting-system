@@ -7,7 +7,7 @@
         </div>
     </header>
 
-    @if(isAdmin) {
+    @if (isAdmin) {
     <div class="actions">
         <button (click)='createVote()' class="create-btn">Create New Vote</button>
     </div>
@@ -15,32 +15,41 @@
 
     <div class="votes-section">
         <h2>Open Votes</h2>
-        <div *ngIf="openVotes.length === 0">No open votes available.</div>
-        <div class="vote-card" *ngFor="let vote of openVotes">
+        @if (openVotes.length === 0) {
+        <div>No open votes available.</div>
+        }
+        @for (vote of openVotes; track vote.voteId) {
+        <div class="vote-card">
             <h3>{{ vote.subject }}</h3>
             <p>ID: {{ vote.voteId }}</p>
             <button [routerLink]="['/vote', vote.voteId]">Vote Now</button>
-            @if(isAdmin) {
+            @if (isAdmin) {
             <button (click)="endVote(vote.voteId)" class="end-btn">End Vote</button>
             }
-
         </div>
+        }
     </div>
 
     <div class="votes-section">
         <h2>Closed Votes</h2>
-        <div *ngIf="closedVotes.length === 0">No closed votes available.</div>
-        <div class="vote-card closed" *ngFor="let vote of closedVotes">
+        @if (closedVotes.length === 0) {
+        <div>No closed votes available.</div>
+        }
+        @for (vote of closedVotes; track vote.voteId) {
+        <div class="vote-card closed">
             <h3>{{ vote.subject }}</h3>
             <p>Ended: {{ vote.endTime | date:'medium' }}</p>
             <div class="results">
                 <h4>Results:</h4>
                 <ul>
-                    <li *ngFor="let result of vote.results | keyvalue">
+                    @for (result of vote.results | keyvalue; track result.key) {
+                    <li>
                         {{ result.key }}: {{ result.value }} votes
                     </li>
+                    }
                 </ul>
             </div>
         </div>
+        }
     </div>
 </div>

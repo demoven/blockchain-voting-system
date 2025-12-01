@@ -1,46 +1,54 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { VoteService } from '../../services/vote.service';
 
 @Component({
   selector: 'app-create-vote',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './create-vote.component.html',
   styleUrls: ['./create-vote.component.css']
 })
 export class CreateVoteComponent {
-  subject = '';
-  options: string[] = ['', '']; // Start with 2 empty options
-  votersInput = '';
+  voteForm: FormGroup;
   errorMessage = '';
 
-  constructor(private voteService: VoteService, private router: Router) { }
+  constructor(
+    private voteService: VoteService,
+    private router: Router,
+    private fb: FormBuilder
+  ) {
+    this.voteForm = this.fb.group({
+      subject: ['', Validators.required],
+      options: this.fb.array([
+        this.fb.control('', Validators.required),
+        this.fb.control('', Validators.required)
+      ]),
+      voters: ['']
+    });
+  }
 
-  trackByIndex(index: number, obj: any): any {
-    return index;
+  get options() {
+    return this.voteForm.get('options') as FormArray;
   }
 
   addOption() {
-    this.options.push('');
+    this.options.push(this.fb.control('', Validators.required));
   }
 
   removeOption(index: number) {
-    this.options.splice(index, 1);
-  }
-
-  isValid(): boolean {
-    return this.subject.trim() !== '' && this.options.every(o => o.trim() !== '') && this.options.length >= 2;
+    this.options.removeAt(index);
   }
 
   onSubmit() {
-    if (!this.isValid()) return;
+    if (this.voteForm.invalid) return;
 
-    const votersUid = this.votersInput.split(',').map(id => id.trim()).filter(id => id !== '');
+    const { subject, options, voters } = this.voteForm.value;
+    const votersUid = voters ? voters.split(',').map((id: string) => id.trim()).filter((id: string) => id !== '') : [];
 
-    this.voteService.createVote(this.subject, this.options, votersUid).subscribe({
+    this.voteService.createVote(subject, options, votersUid).subscribe({
       next: () => {
         alert('Vote created successfully!');
         this.router.navigate(['/']);

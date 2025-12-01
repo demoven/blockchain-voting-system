@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoteService } from '../../services/vote.service';
 
 @Component({
   selector: 'app-vote',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './vote.component.html',
   styleUrls: ['./vote.component.css']
 })
 export class VoteComponent implements OnInit {
   voteData: any = null;
-  selectedOption: string = '';
+  voteControl = new FormControl('', Validators.required);
   errorMessage: string = '';
   voteId: string = '';
 
@@ -52,9 +52,9 @@ export class VoteComponent implements OnInit {
   }
 
   submitVote() {
-    if (!this.selectedOption) return;
+    if (this.voteControl.invalid || !this.voteControl.value) return;
 
-    this.voteService.castVote(this.voteId, this.selectedOption).subscribe({
+    this.voteService.castVote(this.voteId, this.voteControl.value).subscribe({
       next: () => {
         alert('Vote submitted successfully!');
         this.router.navigate(['/']);

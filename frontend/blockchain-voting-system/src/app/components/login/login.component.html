@@ -1,33 +1,39 @@
 <div class="login-container">
+    @if (!isRegisterMode) {
     <h2>Login</h2>
-    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
-    <form (ngSubmit)="onLogin()">
+    @if (errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+    }
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" [(ngModel)]="email" name="email" required>
+            <input type="email" id="email" formControlName="email">
         </div>
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" [(ngModel)]="password" name="password" required>
+            <input type="password" id="password" formControlName="password">
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" [disabled]="loginForm.invalid">Login</button>
     </form>
     <p>Don't have an account? <a (click)="toggleMode()" style="cursor: pointer; color: blue;">Register</a></p>
-</div>
+    }
 
-<div class="login-container" *ngIf="isRegisterMode">
+    @if (isRegisterMode) {
     <h2>Register</h2>
-    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
-    <form (ngSubmit)="onRegister()">
+    @if (errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+    }
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
         <div class="form-group">
             <label for="reg-email">Email</label>
-            <input type="email" id="reg-email" [(ngModel)]="registerEmail" name="reg-email" required>
+            <input type="email" id="reg-email" formControlName="email">
         </div>
         <div class="form-group">
             <label for="reg-password">Password</label>
-            <input type="password" id="reg-password" [(ngModel)]="registerPassword" name="reg-password" required>
+            <input type="password" id="reg-password" formControlName="password">
         </div>
-        <button type="submit">Register</button>
+        <button type="submit" [disabled]="registerForm.invalid">Register</button>
     </form>
     <p>Already have an account? <a (click)="toggleMode()" style="cursor: pointer; color: blue;">Login</a></p>
+    }
 </div>

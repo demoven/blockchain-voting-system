@@ -1,18 +1,26 @@
 <div class="create-container">
     <h2>Create New Vote</h2>
-    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+    @if (errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+    }
 
-    <form (ngSubmit)="onSubmit()">
+    <form [formGroup]="voteForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
             <label for="subject">Subject</label>
-            <input type="text" id="subject" [(ngModel)]="subject" name="subject" required>
+            <input type="text" id="subject" formControlName="subject">
         </div>
 
         <div class="form-group">
             <label>Options</label>
-            <div *ngFor="let option of options; let i = index; trackBy: trackByIndex" class="option-input">
-                <input type="text" [(ngModel)]="options[i]" name="option{{i}}" placeholder="Option {{i+1}}" required>
-                <button type="button" (click)="removeOption(i)" *ngIf="options.length > 2" class="remove-btn">X</button>
+            <div formArrayName="options">
+                @for (option of options.controls; track $index) {
+                <div class="option-input">
+                    <input type="text" [formControlName]="$index" placeholder="Option {{$index + 1}}">
+                    @if (options.length > 2) {
+                    <button type="button" (click)="removeOption($index)" class="remove-btn">X</button>
+                    }
+                </div>
+                }
             </div>
             <button type="button" (click)="addOption()" class="add-btn">+ Add Option</button>
         </div>
@@ -20,11 +28,11 @@
         <div class="form-group">
             <label for="voters">Allowed Voters (UIDs, comma separated)</label>
             <small>Leave empty for public vote</small>
-            <textarea id="voters" [(ngModel)]="votersInput" name="voters" rows="3"></textarea>
+            <textarea id="voters" formControlName="voters" rows="3"></textarea>
         </div>
 
         <div class="actions">
-            <button type="submit" [disabled]="!isValid()">Create Vote</button>
+            <button type="submit" [disabled]="voteForm.invalid">Create Vote</button>
             <button type="button" (click)="goBack()" class="cancel-btn">Cancel</button>
         </div>
     </form>
