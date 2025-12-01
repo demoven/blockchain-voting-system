@@ -1,0 +1,16 @@
+@if (modalService.isOpen()) {
+<div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>{{ modalService.data().title }}</h3>
+            <button class="close-btn" (click)="close()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>{{ modalService.data().message }}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" (click)="close()">OK</button>
+        </div>
+    </div>
+</div>
+}

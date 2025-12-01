@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { VoteService } from '../../services/vote.service';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-create-vote',
@@ -18,7 +19,8 @@ export class CreateVoteComponent {
   constructor(
     private voteService: VoteService,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private modalService: ModalService
   ) {
     this.voteForm = this.fb.group({
       subject: ['', Validators.required],
@@ -50,7 +52,7 @@ export class CreateVoteComponent {
 
     this.voteService.createVote(subject, options, votersUid).subscribe({
       next: () => {
-        alert('Vote created successfully!');
+        this.modalService.open('Success', 'Vote created successfully!');
         this.router.navigate(['/']);
       },
       error: (err) => {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoteService } from '../../services/vote.service';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-vote',
@@ -20,7 +21,8 @@ export class VoteComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private voteService: VoteService
+    private voteService: VoteService,
+    private modalService: ModalService
   ) { }
 
   ngOnInit() {
@@ -56,7 +58,7 @@ export class VoteComponent implements OnInit {
 
     this.voteService.castVote(this.voteId, this.voteControl.value).subscribe({
       next: () => {
-        alert('Vote submitted successfully!');
+        this.modalService.open('Success', 'Vote submitted successfully!');
         this.router.navigate(['/']);
       },
       error: (err) => {

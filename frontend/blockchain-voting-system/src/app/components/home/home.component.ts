@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { VoteService } from '../../services/vote.service';
+import { ModalService } from '../../services/modal.service';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -17,6 +18,7 @@ export class HomeComponent implements OnInit {
   authService = inject(AuthService);
   router = inject(Router);
   voteService = inject(VoteService);
+  modalService = inject(ModalService);
   isAdmin: boolean = false;
 
   ngOnInit() {
@@ -41,10 +43,10 @@ export class HomeComponent implements OnInit {
     if (confirm('Are you sure you want to end this vote?')) {
       this.voteService.endVote(voteId).subscribe({
         next: () => {
-          alert('Vote ended successfully');
+          this.modalService.open('Success', 'Vote ended successfully');
           this.loadVotes();
         },
-        error: (err) => alert('Error ending vote: ' + err.error.error)
+        error: (err) => this.modalService.open('Error', 'Error ending vote: ' + err.error.error)
       });
     }
   }
