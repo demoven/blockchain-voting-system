@@ -9,7 +9,12 @@
             <p>{{ modalService.data().message }}</p>
         </div>
         <div class="modal-footer">
+            @if (modalService.isConfirmation()) {
+            <button class="btn btn-secondary" (click)="close()">Cancel</button>
+            <button class="btn btn-primary" (click)="confirm()">Confirm</button>
+            } @else {
             <button class="btn btn-primary" (click)="close()">OK</button>
+            }
         </div>
     </div>
 </div>

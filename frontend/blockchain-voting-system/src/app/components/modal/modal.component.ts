@@ -16,6 +16,10 @@ export class ModalComponent {
         this.modalService.close();
     }
 
+    confirm() {
+        this.modalService.triggerConfirm();
+    }
+
     onBackdropClick(event: MouseEvent) {
         if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
             this.close();

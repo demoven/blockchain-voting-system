@@ -40,7 +40,7 @@ export class HomeComponent implements OnInit {
   }
 
   endVote(voteId: string) {
-    if (confirm('Are you sure you want to end this vote?')) {
+    this.modalService.confirm('Confirm Action', 'Are you sure you want to end this vote?', () => {
       this.voteService.endVote(voteId).subscribe({
         next: () => {
           this.modalService.open('Success', 'Vote ended successfully');
@@ -48,7 +48,7 @@ export class HomeComponent implements OnInit {
         },
         error: (err) => this.modalService.open('Error', 'Error ending vote: ' + err.error.error)
       });
-    }
+    });
   }
 
   createVote() {
