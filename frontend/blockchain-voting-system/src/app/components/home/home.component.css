@@ -1,6 +1,6 @@
 .home-container {
-    padding: 20px;
-    max-width: 800px;
+    padding: var(--spacing-xl) var(--spacing-md);
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -8,63 +8,162 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    margin-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-lg);
+}
+
+header h1 {
+    margin-bottom: 0;
+    color: var(--primary-color);
 }
 
 .user-info {
     display: flex;
-    gap: 15px;
+    gap: var(--spacing-md);
     align-items: center;
+    color: var(--text-muted);
+}
+
+.user-info button {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.user-info button:hover {
+    background-color: var(--surface-color);
+    color: var(--text-main);
+    border-color: var(--text-muted);
 }
 
 .actions {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-xl);
+    display: flex;
+    justify-content: flex-end;
 }
 
 .create-btn {
-    background-color: #28a745;
+    background-color: var(--primary-color);
     color: white;
-    padding: 10px 20px;
+    padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 5px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+
+.create-btn:hover {
+    background-color: var(--primary-hover);
 }
 
 .votes-section {
-    margin-bottom: 40px;
+    margin-bottom: var(--spacing-xl);
+}
+
+.votes-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-main);
+    border-left: 4px solid var(--primary-color);
+    padding-left: var(--spacing-sm);
 }
 
 .vote-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    background-color: var(--surface-color);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.vote-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .vote-card.closed {
-    background-color: #f0f0f0;
-    color: #666;
+    background-color: var(--background-color);
+    border-style: dashed;
+}
+
+.vote-card.closed h3 {
+    color: var(--text-muted);
 }
 
 .vote-card h3 {
     margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-main);
 }
 
-button {
-    padding: 8px 16px;
-    background-color: #007bff;
+.vote-card p {
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-md);
+    font-size: 0.875rem;
+}
+
+.vote-card button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    margin-right: 10px;
+    margin-right: var(--spacing-sm);
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.vote-card button:hover {
+    background-color: var(--primary-hover);
 }
 
 .end-btn {
-    background-color: #dc3545;
+    background-color: var(--surface-color) !important;
+    color: var(--error-color) !important;
+    border: 1px solid var(--error-color) !important;
+}
+
+.end-btn:hover {
+    background-color: var(--error-color) !important;
+    color: white !important;
+}
+
+.results {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+}
+
+.results h4 {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.results ul {
+    list-style: none;
+    padding: 0;
+}
+
+.results li {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.results li:last-child {
+    border-bottom: none;
 }

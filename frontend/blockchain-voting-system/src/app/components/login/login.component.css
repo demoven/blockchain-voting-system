@@ -1,41 +1,94 @@
 .login-container {
     max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    margin: 4rem auto;
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background-color: var(--surface-color);
+    box-shadow: var(--shadow-lg);
+}
+
+h2 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-xl);
+    font-size: 1.75rem;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-lg);
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--text-main);
 }
 
 input {
     width: 100%;
-    padding: 8px;
+    padding: 0.75rem;
     box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 button {
     width: 100%;
-    padding: 10px;
-    background-color: #007bff;
+    padding: 0.75rem;
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: var(--radius-md);
     cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    margin-top: var(--spacing-sm);
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: var(--primary-hover);
+}
+
+button:disabled {
+    background-color: var(--secondary-color);
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .error {
-    color: red;
-    margin-bottom: 10px;
+    color: var(--error-color);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+p {
+    text-align: center;
+    margin-top: var(--spacing-lg);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+a {
+    color: var(--primary-color);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
