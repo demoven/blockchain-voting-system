@@ -78,14 +78,14 @@ app.post("/startVote", verifyToken, (req, res) => {
     }
     try {
         const voteId = crypto.randomUUID();
-        
-        const transaction = { 
+
+        const transaction = {
             voteId: voteId,
-            subject: subject, 
-            options: options, 
+            subject: subject,
+            options: options,
             votersUid: votersUid,
-            type: "startVote", 
-            startTime: Date.now() 
+            type: "startVote",
+            startTime: Date.now()
         };
 
         votingBlockchain.addTransaction(transaction);
@@ -107,7 +107,7 @@ app.post("/vote", verifyToken, (req, res) => {
         if (!startTx) {
             throw new Error("Vote introuvable.");
         }
-        
+
         if (!startTx.options.includes(choice)) {
             throw new Error("Option de vote invalide.");
         }
@@ -133,18 +133,18 @@ app.post("/endVote", verifyToken, async (req, res) => {
         if (!voteId) throw new Error("voteId est requis.");
 
         const results = {};
-        
+
         votingBlockchain.pendingTransactions.forEach(tx => {
             if (tx.voteId === voteId && tx.choice) {
                 results[tx.choice] = (results[tx.choice] || 0) + 1;
             }
         });
 
-        const endTransaction = { 
-            type: "endVote", 
+        const endTransaction = {
+            type: "endVote",
             voteId: voteId,
-            endTime: Date.now(), 
-            results: results 
+            endTime: Date.now(),
+            results: results
         };
 
         votingBlockchain.addTransaction(endTransaction);
@@ -154,11 +154,79 @@ app.post("/endVote", verifyToken, async (req, res) => {
         if (newBlock) {
             broadcastBlock(newBlock);
         }
-    
+
         console.log(`📥 Vote terminé pour le vote ID: ${voteId}`);
         res.send({ message: "Vote terminé et bloc miné avec succès.", results: results });
     } catch (error) {
         return res.status(400).send({ error: error.message });
+    }
+});
+
+app.get("/votes/open", verifyToken, (req, res) => {
+    const userUid = req.user.uid;
+    const isAdmin = req.user.isAdmin;
+
+    try {
+        // Filter pending transactions for startVote type
+        const openVotes = votingBlockchain.pendingTransactions.filter(tx => tx.type === "startVote");
+
+        if (isAdmin) {
+            // Admin sees all open votes
+            return res.send(openVotes);
+        }
+
+        // User sees votes where they are in votersUid or if it's public (empty votersUid)
+        const userVotes = openVotes.filter(vote => {
+            if (!vote.votersUid || vote.votersUid.length === 0) return true;
+            return vote.votersUid.includes(userUid);
+        });
+
+        res.send(userVotes);
+    } catch (error) {
+        res.status(400).send({ error: error.message });
+    }
+});
+
+app.get("/votes/closed", verifyToken, (req, res) => {
+    const userUid = req.user.uid;
+    const isAdmin = req.user.isAdmin;
+
+    try {
+        const closedVotes = [];
+
+        const allTransactions = [];
+        votingBlockchain.chain.forEach(block => {
+            if (Array.isArray(block.data)) {
+                allTransactions.push(...block.data);
+            }
+        });
+
+        const endVotes = allTransactions.filter(tx => tx.type === "endVote");
+
+        endVotes.forEach(endTx => {
+            const startTx = allTransactions.find(tx => tx.type === "startVote" && tx.voteId === endTx.voteId);
+
+            if (startTx) {
+                const voteDetails = {
+                    ...startTx,
+                    results: endTx.results,
+                    endTime: endTx.endTime
+                };
+
+                if (isAdmin) {
+                    closedVotes.push(voteDetails);
+                } else {
+                    // Check if user was allowed to vote
+                    if (!startTx.votersUid || startTx.votersUid.length === 0 || startTx.votersUid.includes(userUid)) {
+                        closedVotes.push(voteDetails);
+                    }
+                }
+            }
+        });
+
+        res.send(closedVotes);
+    } catch (error) {
+        res.status(400).send({ error: error.message });
     }
 });
 
@@ -167,7 +235,7 @@ app.get("/results/:voteId", (req, res) => {
     try {
         // Chercher la transaction de fin dans la blockchain
         let endTx = null;
-        
+
         // Recherche inversée pour trouver le plus récent
         for (let i = votingBlockchain.chain.length - 1; i >= 0; i--) {
             const block = votingBlockchain.chain[i];

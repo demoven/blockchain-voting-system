@@ -1,0 +1,22 @@
+<div class="vote-container" *ngIf="voteData">
+    <h2>{{ voteData.subject }}</h2>
+    <p>Vote ID: {{ voteData.voteId }}</p>
+
+    <div class="options">
+        <div *ngFor="let option of voteData.options" class="option-item">
+            <label>
+                <input type="radio" name="voteOption" [(ngModel)]="selectedOption" [value]="option">
+                {{ option }}
+            </label>
+        </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+    <div class="actions">
+        <button (click)="submitVote()" [disabled]="!selectedOption">Submit Vote</button>
+        <button (click)="goBack()" class="cancel-btn">Cancel</button>
+    </div>
+</div>
+<div *ngIf="!voteData && !errorMessage">Loading...</div>
+<div *ngIf="errorMessage && !voteData" class="error">{{ errorMessage }}</div>

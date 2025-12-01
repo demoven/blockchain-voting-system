@@ -1,0 +1,46 @@
+<div class="home-container">
+    <header>
+        <h1>Blockchain Voting System</h1>
+        <div class="user-info">
+            <span>Welcome, {{ (authService.currentUser$ | async)?.email }}</span>
+            <button (click)="logout()">Logout</button>
+        </div>
+    </header>
+
+    @if(isAdmin) {
+    <div class="actions">
+        <button (click)='createVote()' class="create-btn">Create New Vote</button>
+    </div>
+    }
+
+    <div class="votes-section">
+        <h2>Open Votes</h2>
+        <div *ngIf="openVotes.length === 0">No open votes available.</div>
+        <div class="vote-card" *ngFor="let vote of openVotes">
+            <h3>{{ vote.subject }}</h3>
+            <p>ID: {{ vote.voteId }}</p>
+            <button [routerLink]="['/vote', vote.voteId]">Vote Now</button>
+            @if(isAdmin) {
+            <button (click)="endVote(vote.voteId)" class="end-btn">End Vote</button>
+            }
+
+        </div>
+    </div>
+
+    <div class="votes-section">
+        <h2>Closed Votes</h2>
+        <div *ngIf="closedVotes.length === 0">No closed votes available.</div>
+        <div class="vote-card closed" *ngFor="let vote of closedVotes">
+            <h3>{{ vote.subject }}</h3>
+            <p>Ended: {{ vote.endTime | date:'medium' }}</p>
+            <div class="results">
+                <h4>Results:</h4>
+                <ul>
+                    <li *ngFor="let result of vote.results | keyvalue">
+                        {{ result.key }}: {{ result.value }} votes
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
