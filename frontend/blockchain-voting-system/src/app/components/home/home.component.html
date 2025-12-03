@@ -19,10 +19,14 @@
         <div>No open votes available.</div>
         }
         @for (vote of openVotes; track vote.voteId) {
-        <div class="vote-card">
+        <div class="vote-card" [class.already-voted]="vote.hasVoted">
             <h3>{{ vote.subject }}</h3>
             <p>ID: {{ vote.voteId }}</p>
+            @if (vote.hasVoted) {
+            <button disabled>Already Voted</button>
+            } @else {
             <button [routerLink]="['/vote', vote.voteId]">Vote Now</button>
+            }
             @if (isAdmin) {
             <button (click)="endVote(vote.voteId)" class="end-btn">End Vote</button>
             }

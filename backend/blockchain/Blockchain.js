@@ -119,20 +119,20 @@ class Blockchain {
 
         // Retirer uniquement les transactions minées de la liste d'attente
         this.pendingTransactions = this.pendingTransactions.filter(tx => tx.voteId !== voteId);
-        
+
         return newBlock;
     }
 
     async addBlock(newBlock) {
         const latestBlock = this.getLatestBlock();
-        
+
         if (this.chain.length > 0) {
             // Validation simple du bloc
             if (newBlock.previousHash !== latestBlock.hash) {
                 console.log("❌ Bloc rejeté : Hash précédent invalide");
                 return false;
             }
-            
+
             if (newBlock.index !== latestBlock.index + 1) {
                 console.log("❌ Bloc rejeté : Index invalide");
                 return false;
@@ -147,10 +147,10 @@ class Blockchain {
         // On pourrait ajouter une validation du hash ici
 
         this.chain.push(newBlock);
-        
+
         // Sauvegarder dans la DB
         await saveBlockToDB(newBlock);
-        
+
         // Retirer les transactions du bloc de nos transactions en attente
         // On suppose que newBlock.data contient les transactions
         if (Array.isArray(newBlock.data)) {

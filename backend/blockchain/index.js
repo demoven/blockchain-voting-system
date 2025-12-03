@@ -167,13 +167,14 @@ app.get("/votes/open", verifyToken, (req, res) => {
     const isAdmin = req.user.isAdmin;
 
     try {
+        // If the user is an admin, show all open votes
+        if (isAdmin) {
+            const openVotes = votingBlockchain.pendingTransactions.filter(tx => tx.type === "startVote");
+            res.send(openVotes);
+            return;
+        }
         // Filter pending transactions for startVote type
         const openVotes = votingBlockchain.pendingTransactions.filter(tx => tx.type === "startVote");
-
-        if (isAdmin) {
-            // Admin sees all open votes
-            return res.send(openVotes);
-        }
 
         // User sees votes where they are in votersUid or if it's public (empty votersUid)
         const userVotes = openVotes.filter(vote => {
@@ -181,7 +182,14 @@ app.get("/votes/open", verifyToken, (req, res) => {
             return vote.votersUid.includes(userUid);
         });
 
-        res.send(userVotes);
+        // Add hasVoted status
+        const hashedUserUid = votingBlockchain.hashVoterId(userUid);
+        const votesWithStatus = userVotes.map(vote => ({
+            ...vote,
+            hasVoted: votingBlockchain.hasUserVoted(vote.voteId, hashedUserUid)
+        }));
+
+        res.send(votesWithStatus);
     } catch (error) {
         res.status(400).send({ error: error.message });
     }
