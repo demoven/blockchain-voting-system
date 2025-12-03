@@ -170,6 +170,7 @@ app.get("/votes/open", verifyToken, (req, res) => {
         // If the user is an admin, show all open votes
         if (isAdmin) {
             const openVotes = votingBlockchain.pendingTransactions.filter(tx => tx.type === "startVote");
+            openVotes.sort((a, b) => b.startTime - a.startTime);
             res.send(openVotes);
             return;
         }

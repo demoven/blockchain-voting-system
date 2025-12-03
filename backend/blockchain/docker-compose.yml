@@ -17,6 +17,8 @@ services:
       - "3001:3001"
     depends_on:
       - mongodb-node1
+    volumes:
+      - ./keys:/app/keys
     
   mongodb-node1:
     image: mongo:7
@@ -42,6 +44,8 @@ services:
       - "3002:3002"
     depends_on:
       - mongodb-node2
+    volumes:
+      - ./keys:/app/keys
     
   mongodb-node2:
     image: mongo:7
@@ -67,6 +71,8 @@ services:
       - "3003:3003"
     depends_on:
       - mongodb-node3
+    volumes:
+      - ./keys:/app/keys
     
   mongodb-node3:
     image: mongo:7
@@ -103,6 +109,8 @@ services:
       - "3005:3005"
     environment:
       - PORT=3005
+    volumes:
+      - ../auth-service/keys:/app/keys
 
 # -------------------------
 # FRONTEND
