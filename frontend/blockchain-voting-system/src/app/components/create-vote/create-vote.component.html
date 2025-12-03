@@ -26,9 +26,26 @@
         </div>
 
         <div class="form-group">
-            <label for="voters">Allowed Voters (UIDs, comma separated)</label>
-            <small>Leave empty for public vote</small>
-            <textarea id="voters" formControlName="voters" rows="3"></textarea>
+            <label>Allowed Voters</label>
+            <small>Select users who can vote (leave empty for public vote)</small>
+
+            <div class="user-search">
+                <input type="text" [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}"
+                    (input)="filterUsers()" placeholder="Search users by email...">
+            </div>
+
+            <div class="user-list">
+                @for (user of filteredUsers; track user.uid) {
+                <div class="user-item">
+                    <input type="checkbox" [id]="user.uid" [checked]="isUserSelected(user.uid)"
+                        (change)="toggleUserSelection(user.uid)">
+                    <label [for]="user.uid">{{ user.email }}</label>
+                </div>
+                }
+                @if (filteredUsers.length === 0) {
+                <div class="no-users">No users found</div>
+                }
+            </div>
         </div>
 
         <div class="actions">

@@ -87,4 +87,10 @@ export class AuthService {
             map((user: any) => user.isAdmin)
         );
     }
+
+    getUsers(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/admin/users`, {
+            headers: { Authorization: `Bearer ${this.getToken()}` }
+        });
+    }
 }
