@@ -12,6 +12,7 @@ services:
       - MONGO_URL=mongodb://mongodb-node1:27017/blockchain
       - PORT=3001
       - PEERS=http://node2:3002,http://node3:3003
+      - AUTH_SERVICE_URL=http://auth-service:3005
     ports:
       - "3001:3001"
     depends_on:
@@ -36,6 +37,7 @@ services:
       - MONGO_URL=mongodb://mongodb-node2:27017/blockchain
       - PORT=3002
       - PEERS=http://node1:3001,http://node3:3003
+      - AUTH_SERVICE_URL=http://auth-service:3005
     ports:
       - "3002:3002"
     depends_on:
@@ -60,6 +62,7 @@ services:
       - MONGO_URL=mongodb://mongodb-node3:27017/blockchain
       - PORT=3003
       - PEERS=http://node1:3001,http://node2:3002
+      - AUTH_SERVICE_URL=http://auth-service:3005
     ports:
       - "3003:3003"
     depends_on:
@@ -72,6 +75,49 @@ services:
       - "27019:27017"
     volumes:
       - mongo3-data:/data/db
+
+# -------------------------
+# LOAD BALANCER
+# -------------------------
+
+  loadbalancer:
+    image: nginx:alpine
+    container_name: loadbalancer
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - node1
+      - node2
+      - node3
+
+# -------------------------
+# AUTH SERVICE
+# -------------------------
+
+  auth-service:
+    build: ../auth-service
+    container_name: auth-service
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+
+# -------------------------
+# FRONTEND
+# -------------------------
+
+  frontend:
+    build:
+      context: ../../frontend/blockchain-voting-system
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - loadbalancer
+      - auth-service
 
 volumes:
   mongo1-data:

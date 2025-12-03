@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
     providedIn: 'root'
 })
 export class VoteService {
-    private apiUrl = 'http://localhost:3000'; // Blockchain Service URL
+    private apiUrl = 'http://localhost:3000/blockchain'; // Load Balancer URL for Blockchain
 
     constructor(private http: HttpClient, private authService: AuthService) { }
 

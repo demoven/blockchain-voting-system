@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = 'http://localhost:3005'; // Auth Service URL
+    private apiUrl = 'http://localhost:3000/auth'; // Load Balancer URL for Auth Service
     private currentUserSubject = new BehaviorSubject<any>(null);
     public currentUser$ = this.currentUserSubject.asObservable();
 
