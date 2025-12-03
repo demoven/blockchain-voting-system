@@ -72,7 +72,7 @@ app.post("/block/broadcast", async (req, res) => {
 
 app.post("/startVote", verifyToken, (req, res) => {
     const { subject, options, votersUid } = req.body;
-    const isAdmin = req.user.isAdmin;
+    const isAdmin = req.user.admin;
     if (!isAdmin) {
         return res.status(403).send({ error: "Accès refusé : réservé aux administrateurs" });
     }
@@ -125,7 +125,7 @@ app.post("/vote", verifyToken, (req, res) => {
 
 app.post("/endVote", verifyToken, async (req, res) => {
     const { voteId } = req.body;
-    const isAdmin = req.user.isAdmin;
+    const isAdmin = req.user.admin;
     if (!isAdmin) {
         return res.status(403).send({ error: "Accès refusé : réservé aux administrateurs" });
     }
@@ -164,7 +164,7 @@ app.post("/endVote", verifyToken, async (req, res) => {
 
 app.get("/votes/open", verifyToken, (req, res) => {
     const userUid = req.user.uid;
-    const isAdmin = req.user.isAdmin;
+    const isAdmin = req.user.admin;
 
     try {
         // If the user is an admin, show all open votes
@@ -200,7 +200,7 @@ app.get("/votes/open", verifyToken, (req, res) => {
 
 app.get("/votes/closed", verifyToken, (req, res) => {
     const userUid = req.user.uid;
-    const isAdmin = req.user.isAdmin;
+    const isAdmin = req.user.admin;
 
     try {
         const closedVotes = [];

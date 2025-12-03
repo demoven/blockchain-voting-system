@@ -2,6 +2,10 @@ const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
+const jwt = require('jsonwebtoken');
+
 dotenv.config();
 
 // firebase initialization
@@ -25,6 +29,29 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
+// Load Keys
+const privateKeyPath = path.join(__dirname, 'keys', 'private.pem');
+const publicKeyPath = path.join(__dirname, 'keys', 'public.pem');
+
+let privateKey, publicKey;
+
+try {
+  privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+  publicKey = fs.readFileSync(publicKeyPath, 'utf8');
+} catch (error) {
+  console.error("Error loading keys:", error);
+  process.exit(1);
+}
+
+// Function to generate Access Token
+const generateAccessToken = (user) => {
+  const payload = {
+    uid: user.uid,
+    email: user.email,
+    admin: user.admin || false
+  };
+  return jwt.sign(payload, privateKey, { algorithm: 'RS256', expiresIn: '1h' });
+};
 
 // --- ROUTES PUBLIQUES (Utilisateurs Lambda) ---
 
@@ -33,7 +60,11 @@ app.post('/register', async (req, res) => {
   const { email, password } = req.body;
   try {
     const userCredentials = await createUserWithEmailAndPassword(auth, email, password)
-    const token = await userCredentials.user.getIdToken();
+    // const token = await userCredentials.user.getIdToken(); // Old Firebase Token
+
+    // Generate Custom JWT
+    const token = generateAccessToken({ uid: userCredentials.user.uid, email: userCredentials.user.email });
+
     res.status(201).json({ uid: userCredentials.user.uid, email: userCredentials.user.email, token: token });
     console.log('Utilisateur créé avec succès :', userCredentials.user.uid, userCredentials.user.email);
   } catch (error) {
@@ -48,11 +79,30 @@ app.post('/login', async (req, res) => {
     // On appelle l'API REST de Firebase pour vérifier le mot de passe
     const userCredentials = await signInWithEmailAndPassword(auth, email, password)
     console.log('Utilisateur connecté avec succès :', userCredentials.user.uid, userCredentials.user.email);
-    const token = await userCredentials.user.getIdToken();
+
+    // Check if user is admin (fetch custom claims if needed, or just default to false for now, 
+    // but better to fetch from admin SDK if we want to include it in token)
+    // For simplicity, we'll just generate the token. If we need admin claim, we should fetch it.
+    let isAdmin = false;
+    try {
+      const userRecord = await admin.auth().getUser(userCredentials.user.uid);
+      isAdmin = userRecord.customClaims && userRecord.customClaims.admin === true;
+    } catch (e) {
+      console.error("Error fetching user record for admin check:", e);
+    }
+    console.log("isAdmin:", isAdmin);
+
+    const token = generateAccessToken({
+      uid: userCredentials.user.uid,
+      email: userCredentials.user.email,
+      admin: isAdmin
+    });
+
     res.json({ uid: userCredentials.user.uid, email: userCredentials.user.email, token: token });
 
   } catch (error) {
     // Gestion des erreurs (mauvais mot de passe, etc.)
+    console.error("Login error:", error);
     res.status(401).json({ error: "Email ou mot de passe invalide" });
   }
 });
@@ -68,10 +118,12 @@ const verifyToken = async (req, res, next) => {
 
   const token = authHeader.split('Bearer ')[1];
   try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    // Verify using Public Key
+    const decodedToken = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
     req.user = decodedToken; // On attache l'utilisateur à la requête
     next();
   } catch (error) {
+    console.error("Token verification failed:", error.message);
     res.status(401).send('Token invalide ou expiré');
   }
 };
@@ -87,7 +139,6 @@ app.get('/verifyToken', verifyToken, (req, res) => {
 // 4. LISTER LES UTILISATEURS (Admin seulement)
 app.get('/admin/users', verifyToken, async (req, res) => {
   // Vérification supplémentaire : est-ce un admin ?
-  // (Nécessite d'avoir défini le custom claim 'admin' auparavant)
   if (req.user.admin !== true) {
     return res.status(403).json({ error: "Accès refusé : réservé aux administrateurs" });
   }
