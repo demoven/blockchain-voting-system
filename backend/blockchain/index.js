@@ -189,6 +189,9 @@ app.get("/votes/open", verifyToken, (req, res) => {
             hasVoted: votingBlockchain.hasUserVoted(vote.voteId, hashedUserUid)
         }));
 
+        // Sort by startTime descending (most recent first)
+        votesWithStatus.sort((a, b) => b.startTime - a.startTime);
+
         res.send(votesWithStatus);
     } catch (error) {
         res.status(400).send({ error: error.message });
@@ -231,6 +234,9 @@ app.get("/votes/closed", verifyToken, (req, res) => {
                 }
             }
         });
+
+        // Sort by endTime descending (most recent first)
+        closedVotes.sort((a, b) => b.endTime - a.endTime);
 
         res.send(closedVotes);
     } catch (error) {
